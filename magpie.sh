@@ -4,7 +4,6 @@ FILE_STATE="annotated"
 VISUALIZATION=0
 ANNOVAR_DIR="annovar/"
 TEMP_DIR="data/temp/"
-BPCA_DIR="BPCA/"
 ANNOVAR_DATA_DIR="data/output/annovar/"
 SPLICEAI_DATA_DIR="data/output/spliceai/"
 TEST_FILE="data/datasets/test.csv"
@@ -71,7 +70,7 @@ annotate_file() {
   spliceai -I ${SPLICEAI_DATA_DIR}"${FILE_NAME}".vcf -O ${SPLICEAI_DATA_DIR}"${FILE_NAME}"_out.vcf -R ${SPLICEAI_DATA_DIR}hg38.fa -A grch38
   conda deactivate
   python python/magpie.py --mode merge --input_file "${ANNOVAR_DATA_DIR}${FILE_NAME}.hg38_multianno.csv" --spliceai_out "${SPLICEAI_DATA_DIR}/${FILE_NAME}_out.vcf"
-  matlab -nodesktop -nosplash -r "filename=${TEMP_DIR}${FILE_NAME}.csv" ${BPCA_DIR}MAGPIE_fill.m
+  python python/impute.py --input_file "${TEMP_DIR}${FILE_NAME}.csv"
 }
 
 if [ "$MODE" = "pred" ]; then
@@ -88,7 +87,7 @@ if [ "$MODE" = "pred" ]; then
     else
       python python/magpie.py --mode pred --test_file "${TEMP_DIR}${TEST_FILE_NAME}.csv" --model_file "$MODEL_FILE" --feature "$FEATURE_FILE" --selection "$SELECTION_FILE" --file_state "$FILE_STATE"
     fi
-    rm "${TEMP_DIR}${TEST_FILE_NAME}.csv" "${TEMP_DIR}${TEST_FILE_NAME}_bpca.csv" 
+    rm "${TEMP_DIR}${TEST_FILE_NAME}.csv" "${TEMP_DIR}${TEST_FILE_NAME}_bpca.csv"
   fi
 elif [ "$MODE" = 'train' ]; then
   annotate_file "$TRAIN_FILE" "$TRAIN_FILE_NAME"

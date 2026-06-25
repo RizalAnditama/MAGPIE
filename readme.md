@@ -9,9 +9,8 @@ Use `conda env create -f magpie.yml` to create the conda environment is recomman
 ### Additional requirements for training from denovo
 3. SpliceAI (Use `conda env create -f spliceai.yml` to create the conda environment is recommanded).
 
-4. MATLAB CLI.
-5. AnnoVar (register required).
-6. OMIM database(application required).
+4. AnnoVar (register required).
+5. OMIM database(application required).
 
 ### Usage
 Reminder: running MAGPIE on single CPU may take some time because single process of autoFE.
@@ -37,15 +36,15 @@ MAGPIE supports variants in CSV format as input. The input file should contain a
 
 Results would be saved in `data/result`.
 
+Unannotated prediction and de novo training now use a Python-based iterative imputer in place of the previous MATLAB BPCA step.
+
 
 #### Train MAGPIE model from denovo
 1. Download and decompress required database for annotating using `bash download.sh`.
 2. Apply for AnnoVar access, and place all execuatable annotation tools in `./annovar`.
 3. Apply for OMIM database access, and place 'genemap2.txt' in `data/annotation_database`.
 
-4. Install MATLAB CLI manually.
-
-5. Run `source magpie.sh --mode train --input_file [filepath]` e.g. `source magpie.sh --mode train --input_file data/datasets/denovo.csv`.
+4. Run `source magpie.sh --mode train --input_file [filepath]` e.g. `source magpie.sh --mode train --input_file data/datasets/denovo.csv`.
 Model would be saved in `output/result/`.
 
 ### Technical support
