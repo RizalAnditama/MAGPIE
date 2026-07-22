@@ -1,5 +1,5 @@
-## MAGPIE (Multiclass + Fully Open Source Edition)
-A LightGBM-based genetic variant classification system that integrates OpenFE and uses IterativeImputer for data imputation. This version has been optimized to run efficiently in memory-constrained environments and supports multiclass classification (Benign, VUS, Pathogenic).
+## MAGPIE (Fully Open Source Edition)
+A LightGBM-based genetic variant classification system that integrates OpenFE and uses IterativeImputer for data imputation. This version has been optimized to run efficiently in memory-constrained environments and supports doesn't need MATLAB or OMIM Access.
 
 ### Basic Requirements 
 1. Python 3.9+
