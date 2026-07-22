@@ -1,51 +1,42 @@
-## MAGPIE framework
-### Basic requirements 
-1. Python 3.9.12.
+## SenusaBio (MAGPIE Multiclass Edition)
+A LightGBM-based genetic variant classification system that integrates OpenFE and uses IterativeImputer for data imputation. This version has been optimized to run efficiently in memory-constrained environments and supports multiclass classification (Benign, VUS, Pathogenic).
 
-2. Python packages listed in requirements.
-
-Use `conda env create -f magpie.yml` to create the conda environment is recommanded. 
-
-### Additional requirements for training from denovo
-3. SpliceAI (Use `conda env create -f spliceai.yml` to create the conda environment is recommanded).
-
-4. AnnoVar (register required).
-5. OMIM database(application required).
+### Basic Requirements 
+1. Python 3.9+
+2. Python packages listed in `requirements.txt`.
+3. The SpliceAI library.
 
 ### Usage
-Reminder: running MAGPIE on single CPU may take some time because single process of autoFE.
-
-#### Input format
-MAGPIE supports variants in CSV format as input. The input file should contain at least 5 columns in the header as follows. [Sample file](data/datasets/test.csv)
+The MAGPIE system reads variant input data in CSV format. Ensure that the first five columns of the table are named `Chr`, `Start`, `End`, `Ref`, and `Alt`. [Sample File](data/datasets/test.csv)
 
 |  Chr  | Start |  End  |  Ref  |  Alt  |  ...  |
 | ----- | ----- | ----- | ----- | ----- | ----- |
+* Chr: chromosome identity of the genetic variant’s location.
+* Start: starting coordinates of the genetic mutation.
+* End: the end coordinate of the genetic mutation.
+* Ref: the original nucleotide base from the reference genome.
+* Alt: the mutated nucleotide base in the sample.
+* CLASS: class (optional). -1 for Benign, 0 for Variant of Uncertain Significance, 1 for Pathogenic. 
 
-#### Use pretrained MAGPIE model to predict variants
+#### Use a Pretrained Model to Predict Variants
+The system reads and executes the model you previously trained using a multiclass dataset.
 
-1. Install packages listed in requirements or use magpie conda environment.
+**Annotated Variants (If the input file is already annotated)**
+Run this command:
+`source magpie.sh --mode pred --test_file data/datasets/test.csv --file_state annotated --visualization`
 
-##### Annotated variants
+**Unannotated Variants (If the input file is raw)**
+Run this command:
+`source magpie.sh --mode pred --test_file data/datasets/test.csv --file_state unannotated --visualization`
 
-2. Run `source magpie.sh --mode pred --test_file [filepath] --file_state annotated --visualization` e.g. `source magpie.sh --mode pred --test_file data/datasets/test.csv --file_state annotated --visualization`
+Classification results and performance metrics will be exported to the `data/result` and `data/output/visualization/` directories.
 
+#### Train Model From Scratch (De Novo)
+This version has eliminated dependencies on MATLAB and OMIM. The system is fully independent, using pure Python and public databases.
 
-##### Unannotated variants
+1.  Register to obtain the ANNOVAR software through their official website. Extract and place the Perl execution scripts (`table_annovar.pl`, etc.) in the `annovar/` directory.
+2.  Run the `bash download.sh` command to automatically download the hg38 clinical database, the SpliceAI reference genome, ChromHMM, and GenCC (the OMIM replacement).
+3.  Run the model training command using the Bash script:
+    `source magpie.sh --mode train --input_file data/datasets/denovo.csv`
 
-2. Run `source magpie.sh --mode pred --test_file [filepath] --file_state unannotated --visualization` e.g. `source magpie.sh --mode pred --test_file data/datasets/test.csv --file_state unannotated --visualization`
-
-Results would be saved in `data/result`.
-
-Unannotated prediction and de novo training now use a Python-based iterative imputer in place of the previous MATLAB BPCA step.
-
-
-#### Train MAGPIE model from denovo
-1. Download and decompress required database for annotating using `bash download.sh`.
-2. Apply for AnnoVar access, and place all execuatable annotation tools in `./annovar`.
-3. Apply for OMIM database access, and place 'genemap2.txt' in `data/annotation_database`.
-
-4. Run `source magpie.sh --mode train --input_file [filepath]` e.g. `source magpie.sh --mode train --input_file data/datasets/denovo.csv`.
-Model would be saved in `output/result/`.
-
-### Technical support
-Please feel free to contact me(yichengliu at zju.edu.cn) for technical support.
+The trained model will be saved to the `data/result/MAGPIE.model` directory.
