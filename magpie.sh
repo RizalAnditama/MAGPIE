@@ -87,7 +87,7 @@ if [ "$MODE" = "pred" ]; then
     else
       python python/magpie.py --mode pred --test_file "${TEMP_DIR}${TEST_FILE_NAME}.csv" --model_file "$MODEL_FILE" --feature "$FEATURE_FILE" --selection "$SELECTION_FILE" --file_state "$FILE_STATE"
     fi
-    rm "${TEMP_DIR}${TEST_FILE_NAME}.csv" "${TEMP_DIR}${TEST_FILE_NAME}_bpca.csv"
+    rm "${TEMP_DIR}${TEST_FILE_NAME}.csv" "${TEMP_DIR}${TEST_FILE_NAME}_iterative_imputer.csv"
   fi
 elif [ "$MODE" = 'train' ]; then
   annotate_file "$TRAIN_FILE" "$TRAIN_FILE_NAME"

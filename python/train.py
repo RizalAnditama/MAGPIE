@@ -357,7 +357,7 @@ def step_training(data, filename):
 def train(train_file):
     data = pd.read_csv(train_file)
     filename = os.path.splitext(os.path.basename(train_file))[0]
-    data_bpca = pd.read_csv(os.path.join(os.path.abspath(train_file), f'{os.path.splitext(os.path.basename(train_file))[0]}_bpca.csv'), header = None)
+    data_bpca = pd.read_csv(os.path.join(os.path.dirname(os.path.abspath(train_file)), f'{os.path.splitext(os.path.basename(train_file))[0]}_iterative_imputer.csv'), header = None)
     data_bpca.columns = data.columns[7:]
     data = pd.concat([data.iloc[:, :7], data_bpca], axis = 1)
     data = autofe(data, filename)

@@ -30,7 +30,7 @@ def predict(test_file, autoFE_features, selection, model_file, filename, file_st
     test = pd.read_csv(test_file, low_memory = False)
 
     if file_state == 'unannotated':
-        bpca_file = os.path.join(root, f'data/temp/{os.path.splitext(os.path.basename(test_file))[0]}_bpca.csv')
+        bpca_file = os.path.join(root, f'data/temp/{os.path.splitext(os.path.basename(test_file))[0]}_iterative_imputer.csv')
         data_bpca = pd.read_csv(bpca_file, header = None)
         data_bpca.columns = test.columns[7:]
         test = pd.concat([test.iloc[:, :7], data_bpca], axis = 1)

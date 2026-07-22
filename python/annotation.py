@@ -374,27 +374,51 @@ def annotate_biochemical(data):
     return data
 
 
-def annotate_OMIM(data):
-    print('---' + time.asctime(time.localtime(time.time())) + '--- annotating OMIM\n')
-    omim_dict = {}
-    omim_content_list = ['Autosomal recessive', 'Autosomal dominant', 'X-linked recessive', 'X-linked dominant']
-    data_omim = pd.read_table(omim_file)
+def annotate_genCC(data):
+    print('---' + time.asctime(time.localtime(time.time())) + '--- annotating GenCC\n')
+    
+    gencc_file = os.path.join(root, 'data/annotation_database/gencc_submissions.csv')
+    if not os.path.exists(gencc_file):
+        data['omim'] = 'other'
+        return data
 
-    for record in data_omim.iterrows():
-        if record[1]['Approved Gene Symbol'] is not None and str(record[1]['Approved Gene Symbol']) != 'nan':
-            if str(record[1]['Phenotypes']) != 'nan':
-                omim_dict[record[1]['Approved Gene Symbol']] = record[1]['Phenotypes'].split(';')[0].split(', ')[-1]
+    gencc = pd.read_csv(gencc_file)
+    valid_assertions = ['Definitive', 'Strong', 'Moderate']
+    gencc = gencc[gencc['classification_title'].isin(valid_assertions)]
+    
+    gene_map = {}
+    for _, row in gencc.iterrows():
+        gene = row['gene_symbol']
+        moi = str(row['moi_title']).lower()
+        
+        if 'autosomal dominant' in moi:
+            val = 'Autosomal_dominant'
+        elif 'autosomal recessive' in moi:
+            val = 'Autosomal_recessive'
+        elif 'x-linked' in moi:
+            if 'dominant' in moi:
+                val = 'X_linked_dominant'
             else:
-                omim_dict[record[1]['Approved Gene Symbol']] = np.nan
-
-    omim_list = []
-    for record in data['Gene.refGene']:
-        if record in omim_dict:
-            omim_list.append(omim_dict[record])
+                val = 'X_linked_recessive'
+        elif any(x in moi for x in ['mitochondrial', 'y-linked', 'oligogenic', 'semidominant']):
+            val = 'other'
         else:
-            omim_list.append(np.nan)
-    omim_list = ['_'.join(i.split(' ')).replace('-', '_') if i in omim_content_list else 'other' for i in omim_list]
-    data.insert(data.shape[-1], 'omim', omim_list)
+            val = 'other'
+            
+        if gene not in gene_map or gene_map[gene] == 'other':
+            gene_map[gene] = val
+            
+    gene_col = None
+    for col in ['Gene.refGene', 'Gene', 'gene', 'Gene_Name', 'gene_name']:
+        if col in data.columns:
+            gene_col = col
+            break
+            
+    if gene_col:
+        data['omim'] = data[gene_col].map(gene_map).fillna('other')
+    else:
+        data['omim'] = 'other'
+    
     return data
 
 
@@ -405,5 +429,5 @@ def annotate(input_file, spliceai_output):
     data = process_conservation(data)
     data = annotate_functional_effect(data)
     data = annotate_biochemical(data)
-    data = annotate_OMIM(data)
+    data = annotate_genCC(data)
     return data
