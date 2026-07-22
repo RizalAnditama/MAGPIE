@@ -1,4 +1,4 @@
-## SenusaBio (MAGPIE Multiclass Edition)
+## MAGPIE (Multiclass + Fully Open Source Edition)
 A LightGBM-based genetic variant classification system that integrates OpenFE and uses IterativeImputer for data imputation. This version has been optimized to run efficiently in memory-constrained environments and supports multiclass classification (Benign, VUS, Pathogenic).
 
 ### Basic Requirements 
