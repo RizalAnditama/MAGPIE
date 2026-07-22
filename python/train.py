@@ -90,11 +90,11 @@ def autofe(data, filename, n_blocks = 2, min_candidate_features = 2000):
 
     ofe = openfe()
     # generate new features
-    features = ofe.fit(data=X_train, label=Y_train, n_jobs=30,
+    features = ofe.fit(data=X_train, label=Y_train, n_jobs=4,
                        # categorical_features = cell_types + ['func', 'omim'],
                        n_data_blocks=n_blocks, min_candidate_features=min_candidate_features, feature_boosting=True)
 
-    X_train_tr, X_test_tr = transform(X_train, X_test, features, n_jobs=30)
+    X_train_tr, X_test_tr = transform(X_train, X_test, features, n_jobs=4)
     joblib.dump(features, os.path.join(root, f'data/result/openFE_{filename}.features'))
 
     X_train_tr.index = list(range(X_train_tr.shape[0]))

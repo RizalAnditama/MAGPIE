@@ -43,7 +43,7 @@ def predict(test_file, autoFE_features, selection, model_file, filename, file_st
     X_test = test[feature_list].astype('float64')
 
     print('---' + time.asctime(time.localtime(time.time())) + '--- transforming dataset\n')
-    _, X_test_tr = transform(X_train, X_test, features, n_jobs=30)
+    _, X_test_tr = transform(X_train, X_test, features, n_jobs=4)
     feature_list = pd.read_csv(selection).feature.tolist()
     X_test_filtered = X_test_tr[feature_list].astype('float64')
 
