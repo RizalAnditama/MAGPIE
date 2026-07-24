@@ -1,10 +1,12 @@
 ## MAGPIE (Fully Open Source Edition)
-A LightGBM-based genetic variant classification system that integrates OpenFE and uses IterativeImputer for data imputation. This version has been optimized to run efficiently in memory-constrained environments and supports doesn't need MATLAB or OMIM Access.
+A LightGBM-based genetic variant classification system that integrates OpenFE and uses IterativeImputer for data imputation. This version has been optimized to run efficiently in memory-constrained environments and does not need MATLAB or OMIM access.
 
 ### Basic Requirements 
 1. Python 3.9+
-2. Python packages listed in `requirements.txt`.
-3. The SpliceAI library.
+2. Python packages listed in `requirements.txt` (creating a conda environment using `magpie.yml` is recommended).
+3. The SpliceAI library (creating a conda environment using `spliceai.yml` is recommended).
+4. AnnoVar (registration required).
+5. GenCC database (downloaded automatically via `download.sh`).
 
 ### Usage
 The MAGPIE system reads variant input data in CSV format. Ensure that the first five columns of the table are named `Chr`, `Start`, `End`, `Ref`, and `Alt`. [Sample File](data/datasets/test.csv)
@@ -39,4 +41,7 @@ This version has eliminated dependencies on MATLAB and OMIM. The system is fully
 3.  Run the model training command using the Bash script:
     `source magpie.sh --mode train --input_file data/datasets/denovo.csv`
 
-The trained model will be saved to the `data/result/MAGPIE.model` directory.
+The trained model will be saved to the `data/result/` directory.
+
+### Technical Support
+Please feel free to contact the author (yichengliu at zju.edu.cn) for technical support.

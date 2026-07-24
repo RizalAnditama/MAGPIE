@@ -1,4 +1,8 @@
 #!/bin/bash
+# Get the absolute path to the directory containing this script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
 MODE="pred"
 FILE_STATE="annotated"
 VISUALIZATION=0
@@ -64,13 +68,48 @@ TEST_FILE_NAME=${TEST_FILE_NAME%.*}
 annotate_file() {
   local FULL_FILE_NAME="$1"
   local FILE_NAME="$2"
-  python python/magpie.py --mode prepare --input_file "${FULL_FILE_NAME}"
-  perl ${ANNOVAR_DIR}table_annovar.pl ${ANNOVAR_DATA_DIR}"${FILE_NAME}".avinput ${ANNOVAR_DATA_DIR}humandb/ -buildver hg38 -out ${ANNOVAR_DATA_DIR}"${FILE_NAME}" -remove -protocol refGene,phastConsElements100way,gnomad30_genome,dbnsfp33a,dbnsfp42a -operation g,r,f,f,f -csvout
-  conda activate spliceai
-  spliceai -I ${SPLICEAI_DATA_DIR}"${FILE_NAME}".vcf -O ${SPLICEAI_DATA_DIR}"${FILE_NAME}"_out.vcf -R ${SPLICEAI_DATA_DIR}hg38.fa -A grch38
-  conda deactivate
-  python python/magpie.py --mode merge --input_file "${ANNOVAR_DATA_DIR}${FILE_NAME}.hg38_multianno.csv" --spliceai_out "${SPLICEAI_DATA_DIR}/${FILE_NAME}_out.vcf"
-  python python/impute.py --input_file "${TEMP_DIR}${FILE_NAME}.csv"
+
+  mkdir -p data/temp
+  mkdir -p data/output/visualization
+
+  if [ ! -f "${ANNOVAR_DATA_DIR}${FILE_NAME}.avinput" ]; then
+    echo "Mempersiapkan input dasar"
+    python python/magpie.py --mode prepare --input_file "${FULL_FILE_NAME}"
+  fi
+
+  if [ ! -f "${ANNOVAR_DATA_DIR}${FILE_NAME}.hg38_multianno.csv" ]; then
+    echo "Memulai anotasi ANNOVAR"
+    perl ${ANNOVAR_DIR}table_annovar.pl ${ANNOVAR_DATA_DIR}"${FILE_NAME}".avinput ${ANNOVAR_DATA_DIR}humandb/ -buildver hg38 -out ${ANNOVAR_DATA_DIR}"${FILE_NAME}" -remove -protocol refGene,phastConsElements100way,gnomad30_genome,dbnsfp33a,dbnsfp42a -operation g,r,f,f,f -csvout
+  else
+    echo "Checkpoint ANNOVAR sukses"
+  fi
+
+  if [ ! -f "${SPLICEAI_DATA_DIR}${FILE_NAME}_out.vcf" ]; then
+    echo "Memulai prediksi SpliceAI"
+    # Try to locate conda.sh in common install locations to properly activate environments in non-interactive shells
+    if [ -f "$HOME/miniconda/etc/profile.d/conda.sh" ]; then
+      source "$HOME/miniconda/etc/profile.d/conda.sh"
+    elif [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+      source "$HOME/miniconda3/etc/profile.d/conda.sh"
+    elif [ -f "/opt/conda/etc/profile.d/conda.sh" ]; then
+      source "/opt/conda/etc/profile.d/conda.sh"
+    elif [ -f "$HOME/anaconda3/etc/profile.d/conda.sh" ]; then
+      source "$HOME/anaconda3/etc/profile.d/conda.sh"
+    fi
+    conda activate spliceai
+    spliceai -I ${SPLICEAI_DATA_DIR}"${FILE_NAME}".vcf -O ${SPLICEAI_DATA_DIR}"${FILE_NAME}"_out.vcf -R ${SPLICEAI_DATA_DIR}hg38.fa -A grch38
+    conda deactivate
+  else
+    echo "Checkpoint SpliceAI sukses"
+  fi
+
+  if [ ! -f "${TEMP_DIR}${FILE_NAME}_iterative_imputer.csv" ]; then
+    echo "Menggabungkan fitur dan imputasi"
+    python python/magpie.py --mode merge --input_file "${ANNOVAR_DATA_DIR}${FILE_NAME}.hg38_multianno.csv" --spliceai_out "${SPLICEAI_DATA_DIR}/${FILE_NAME}_out.vcf"
+    python python/impute.py --input_file "${TEMP_DIR}${FILE_NAME}.csv"
+  else
+    echo "Checkpoint Merge dan Impute sukses"
+  fi
 }
 
 if [ "$MODE" = "pred" ]; then
@@ -87,10 +126,13 @@ if [ "$MODE" = "pred" ]; then
     else
       python python/magpie.py --mode pred --test_file "${TEMP_DIR}${TEST_FILE_NAME}.csv" --model_file "$MODEL_FILE" --feature "$FEATURE_FILE" --selection "$SELECTION_FILE" --file_state "$FILE_STATE"
     fi
-    rm "${TEMP_DIR}${TEST_FILE_NAME}.csv" "${TEMP_DIR}${TEST_FILE_NAME}_iterative_imputer.csv"
   fi
 elif [ "$MODE" = 'train' ]; then
   annotate_file "$TRAIN_FILE" "$TRAIN_FILE_NAME"
-  python python/magpie.py --mode train --input_file "${TEMP_DIR}${TRAIN_FILE_NAME}.csv"
-  rm "${TEMP_DIR}${TRAIN_FILE_NAME}.csv"
+  if [ ! -f "data/result/MAGPIE_${TRAIN_FILE_NAME}.model" ]; then
+    echo "Memulai pelatihan model dan OpenFE"
+    python -u python/magpie.py --mode train --input_file "${TEMP_DIR}${TRAIN_FILE_NAME}.csv"
+  else
+    echo "Checkpoint OpenFE dan Model sukses"
+  fi
 fi

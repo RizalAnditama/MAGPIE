@@ -22,9 +22,9 @@ parser.add_argument('--selection', type=str, dest='selection', default=os.path.j
                     help='Filename of autoFE selected features.')
 parser.add_argument('--spliceai_output', type=str, dest='spliceai_output', required=False,
                     help='Filename of output file of SpliceAI annotation.')
-parser.add_argument('-m', '--mode', type=str, dest='mode', required=True,
+parser.add_argument('-m', '--mode', type=str, dest='mode', required=False,
                     help='Mode of running magpie, train/pred supported.')
-parser.add_argument('--file_state', type=str, dest='file_state', required=True,
+parser.add_argument('--file_state', type=str, dest='file_state', required=False,
                     help='State of file to predict, annotated/unannotated supported.')
 parser.add_argument('--visualization', action='store_true', default = False,
                     help = 'Enable MAGPIE results visualization mode. Files are stored in /output/visualization/')
